@@ -4,10 +4,10 @@ metadata:
   name: {{ .Values.deployment.postgresql.service.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    app: postgres-gitlab
+    app: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
 spec:
   selector:
-    app: postgres-gitlab
+    app: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
   type: {{ .Values.deployment.postgresql.service.type }}
   ports:
     - name: web

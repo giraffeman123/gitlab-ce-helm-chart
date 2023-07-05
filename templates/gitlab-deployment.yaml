@@ -15,6 +15,14 @@ spec:
       labels:
         app: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
     spec:
+      initContainers:
+      - name: wait-for-postgresdb-connection
+        image: postgres:alpine3.17
+        ports:
+          - containerPort: 5432
+        command:  ["sh", "-c", 
+        "until pg_isready -h {{ .Values.deployment.postgresql.service.name }}.{{ .Values.namespace }} -p {{ .Values.deployment.postgresql.service.port }}; 
+          do echo waiting for database; sleep 2; done;"]     
       containers:
       - name: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
         image: {{ .Values.deployment.gitlab.imageName }}:{{ .Values.deployment.gitlab.imageTag }}
