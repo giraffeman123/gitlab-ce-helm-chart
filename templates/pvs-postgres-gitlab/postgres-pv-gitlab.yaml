@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume 
+metadata:
+  name: nfs-gitlab-postgresql-pv
+  namespace: {{ .Values.namespace }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.postgresql.spec.capacity.storage }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.postgresql.spec.persistentVolumeReclaimPolicy }}
+  storageClassName: {{ .Values.persistence.postgresql.spec.storageClassName }}
+  nfs:
+    path: {{ .Values.persistence.postgresql.spec.nfs.path }}
+    server: {{ .Values.persistence.postgresql.spec.nfs.server }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-gitlab-pv-logs
+  namespace: {{ .Values.namespace }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.gitlablogs.spec.capacity.storage }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.gitlablogs.spec.persistentVolumeReaclaimPolicy }}
+  storageClassName: {{ .Values.persistence.gitlablogs.spec.storageClassName }}
+  nfs:
+    path: {{ .Values.persistence.gitlablogs.spec.nfs.path }}
+    server: {{ .Values.persistence.gitlablogs.spec.nfs.server }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-gitlab-pv-config
+  namespace: {{ .Values.namespace }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.gitlabconfig.spec.capacity.storage }}
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.gitlabconfig.spec.persistentVolumeReclaimPolicy }}
+  storageClassName: {{ .Values.persistence.gitlabconfig.spec.storageClassName }}
+  nfs:
+    path: {{ .Values.persistence.gitlabconfig.spec.nfs.path }}
+    server: {{ .Values.persistence.gitlabconfig.spec.nfs.server }}

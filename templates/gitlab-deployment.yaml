@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+  template:
+    metadata:
+      labels:
+        app: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+    spec:
+      containers:
+      - name: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+        image: {{ .Values.deployment.gitlab.imageName }}:{{ .Values.deployment.gitlab.imageTag }}
+        imagePullPolicy: {{ .Values.deployment.gitlab.imagePullPolicy }}
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - mountPath: /var/opt/gitlab
+            name: pv-gitlab-data
+          - mountPath: /etc/gitlab
+            name: pv-gitlab-config
+          - mountPath: /var/log/gitlab
+            name: pv-gitlab-logs
+          - mountPath: /etc/gitlab/ssl 
+            name: gitlab-secret 
+        env:
+        - name: GITLAB_OMNIBUS_CONFIG
+          value: | 
+            external_url 'http://{{ .Values.ingress.host }}' 
+            gitlab_rails['db_adapter'] = 'postgresql'
+            gitlab_rails['initial_root_password'] = '3y2bTqVLQpvPqKh'
+            gitlab_rails['db_encoding'] = 'utf8'
+            gitlab_rails['db_host'] = '{{ .Values.deployment.postgresql.service.name }}.{{ .Values.namespace }}'
+            gitlab_rails['db_port'] = '{{ .Values.deployment.postgresql.service.port }}'
+            gitlab_rails['db_username'] = 'gitlab'
+            gitlab_rails['db_password'] = 'gitlab'
+            gitlab_rails['db_database'] = 'postgreslpz'
+            letsencrypt['enable'] = false   
+            nginx['enable'] = true
+            nginx['redirect_http_to_https'] = true
+            nginx['ssl_certificate'] = "/etc/gitlab/ssl/tls.crt"
+            nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/tls.key" 
+      volumes:
+      - name: pv-gitlab-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.gitlabdata.spec.pvcName }}
+      - name: pv-gitlab-config
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.gitlabconfig.spec.pvcName }}
+      - name: pv-gitlab-logs
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.gitlablogs.spec.pvcName }}
+      - name: gitlab-secret
+        secret:
+          secretName: {{ .Values.ingress.tls.secretName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.deployment.gitlab.service.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ (splitList "/" .Values.deployment.gitlab.imageName) | last }}
+  type: {{ .Values.deployment.postgresql.service.type }}
+  ports:  
+    - name: web
+      protocol: TCP
+      port: {{ .Values.deployment.gitlab.service.port }}
+      {{- if or (eq "NodePort" .Values.deployment.gitlab.service.type) (eq "ClusterIP" .Values.deployment.gitlab.service.type) }}      
+      targetPort: 80
+      {{- else }}
+        {{- fail "Invalid service type. Service type must be NodePort or ClusterIP" }}
+      {{- end }}

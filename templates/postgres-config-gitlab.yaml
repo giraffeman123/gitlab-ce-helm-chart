@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-gitlab
+  namespace: {{ .Values.namespace }} 
+  labels:
+    app: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
+data:
+  POSTGRES_DB: postgreslpz
+  POSTGRES_USER: gitlab
+  POSTGRES_PASSWORD: gitlab

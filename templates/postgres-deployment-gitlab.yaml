@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
+  template:
+    metadata:
+      labels:
+        app: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
+    spec:
+      containers:
+        - name: {{ (splitList "/" .Values.deployment.postgresql.imageName) | last }}
+          image: {{ .Values.deployment.postgresql.imageName }}:{{ .Values.deployment.postgresql.imageTag }}
+          imagePullPolicy: {{ .Values.deployment.postgresql.imagePullPolicy}}
+          ports:
+            - containerPort: 5432  
+          envFrom:
+            - configMapRef:
+                name: postgres-config-gitlab
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb-git
+      volumes:
+        - name: postgredb-git 
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.postgresql.spec.pvcName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+
+
